@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/connermurray/Documents/CS455/raytracer 2",
+      "program": "/Users/connermurray/Documents/CS455/raytracer 2/build/Debug/outDebug"
+    }
+  ]
+}
