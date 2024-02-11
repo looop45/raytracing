@@ -8,6 +8,8 @@
 #include "polygon.hpp"
 #include "shadingModel.hpp"
 #include "scene.hpp"
+#include "distant_light.hpp"
+#include "point_light.hpp"
 #include <string>
 
 using namespace std;
@@ -17,119 +19,83 @@ int main()
     const int WIDTH = 512;
     const int HEIGHT = 512;
 
-
-    //*********SCENE 1**********
     //camera
     point3 camera_org(0,0,1);
     vec3 camera_dir(0,0,1);
     float fov = 150.0f;
 
+    color lightColor(0,1,1);
+
     camera cam(camera_org, camera_dir, fov, WIDTH, HEIGHT);
 
-    //sphere(s)
-    vec3 lightDir(0,1,0);
+    color bgColor = color(0.2,0.2,0.2);
 
-    color lightColor(1,1,1);
-    color ambientColor(0.1, 0.1, 0.1); 
-    color bgColor(0.2, 0.2, 0.2);
-    
 
     hittable_list objects;
-    //planes
-    vector<point3> points;
-    points.push_back(point3(0,-0.7,-0.5));
-    points.push_back(point3(1,0.4,-1.0));
-    points.push_back(point3(0,-0.7,-1.5));
+    vec3 lightDir = vec3(-1,-1,-1);
 
-    shadingModel mat0(lightColor, 0.9, 1.0, 0.1, color(0,0,1), ambientColor, color(1.0,1.0,1.0), 4.0, 0, lightDir);
+    vector<shared_ptr<light>> lights;
+//
+    color ambientColor(1, 1, 1); 
 
-    objects.add(make_shared<polygon>(points, mat0));
-
-    points.clear();
-    points.push_back(point3(0,-0.7,-0.5));
-    points.push_back(point3(0,-0.7,-1.5));
-    points.push_back(point3(-1,0.4,-1));
-
-    shadingModel mat2(lightColor, 0.9, 1.0, 0.1, color(1,1,0), ambientColor, color(1.0,1.0,1.0), 4.0, 0, lightDir);
-
-    objects.add(make_shared<polygon>(points, mat2));
-  
-    shadingModel mat3(lightColor, 0.1, 0.1, 0.1, color(0.75,0.75,0.75), ambientColor, color(1.0,1.0,1.0), 10.0, 1, lightDir);
-
-    objects.add(make_shared<sphere >(point3(0,0.3,-1), 0.25, mat3));
-    
-    scene scene1(cam, bgColor, lightDir, objects, WIDTH, HEIGHT);
-    scene1.traceScene("scene1");
-
-    //********SCWENE 2*********
-    lightDir = vec3(1,0,0);
-
-    //spheres
-    objects.clear();
-
-    shadingModel white_Sphere(lightColor, 0.8, 0.1, 0.3, color(1.0, 1.0, 1.0), ambientColor, color(1.0, 1.0, 1.0), 4, 0, lightDir);
-    objects.add(make_shared<sphere>(point3(0.5, 0.0, -0.15), 0.05, white_Sphere));
-    
-    shadingModel red_sphere(lightColor, 0.8, 0.8, 0.1, color(1.0, 0, 0), ambientColor, color(0.5, 1.0, 0.5), 32, 0, lightDir);
-    objects.add(make_shared<sphere>(point3(0.3, 0.0, -0.1), 0.08, red_sphere));
-
-    shadingModel green_sphere(lightColor, 0.7, 0.5, 0.1, color(0, 1, 0), ambientColor, color(0.5, 1.0, 0.5), 64, 0, lightDir);
-    objects.add(make_shared<sphere>(point3(-0.6, 0.0, 0.0), 0.3, green_sphere));
-
-    shadingModel reflective_sphere(lightColor, 0.0, 0.1, 0.1, color(.75, .75, .75), ambientColor, color(1, 1, 1), 10, 0.9, lightDir);
-    objects.add(make_shared<sphere>(point3(0.1, -0.55, 0.25), 0.3, reflective_sphere));
-    
-    shadingModel blue_triangle(lightColor, 0.9, 0.9, 0.1, color(0, 0, 1), ambientColor, color(1, 1, 1), 32, 0, lightDir);
-    points.clear();
-    points.push_back(point3(0.3,-0.3,-0.4));
-    points.push_back(point3(0,0.3,-0.1));
-    points.push_back(point3(-0.3,-0.3,0.2));
-    objects.add(make_shared<polygon>(points, blue_triangle));
-
-    shadingModel yellow_triangle(lightColor, 0.9, 0.5, 0.1, color(1, 1, 0), ambientColor, color(1, 1, 1), 4, 0, lightDir);
-    points.clear();
-    points.push_back(point3(-0.2,0.1,0.1));
-    points.push_back(point3(-0.2,-0.5,0.2));
-    points.push_back(point3(-0.2,0.1,-0.3));
-    objects.add(make_shared<polygon>(points, yellow_triangle));
-
-    scene scene2(cam, bgColor, lightDir, objects, WIDTH, HEIGHT);
-    scene2.traceScene("scene2");
-
-    //************SCENE 3************
-    objects.clear();
-    lightDir = vec3(-1,0.3,1);
-    red_sphere = shadingModel(lightColor, 0.8, 0.8, 0.1, color(1.0, 0, 0), ambientColor, color(0.5, 1.0, 0.5), 32, 0, lightDir);
-    reflective_sphere = shadingModel(lightColor, 0.0, 0.1, 0.1, color(.75, .75, .75), ambientColor, color(1, 1, 1), 10, 0.9, lightDir);
-    shadingModel blue_polygon(lightColor, 0.8, 0.8, 0.1, color(0, 0, 1), ambientColor, color(1, 1.0, 1), 64, 0, lightDir);
-    shadingModel green_polygon(lightColor, 0.8, 0.8, 0.1, color(0, 1, 0.05), ambientColor, color(1, 1.0, 1), 4, 0, lightDir);
-    shadingModel yellow(lightColor, 0.8, 0.8, 0.1, color(1, 1, 0.05), ambientColor, color(1, 1.0, 1), 4, 0, lightDir);
+    shadingModel white_Sphere(0.8, 0.2, 0.25, color(1.0, 1.0, 1.0), ambientColor, color(1.0, 1.0, 1.0), 32, 0, 0, 0);
+    shadingModel red_Sphere(0.8, 0.2, 0.25, color(1.0, 0, 0), ambientColor, color(1.0, 1.0, 1.0), 6, 0, 0, 0);
+    shadingModel green_Sphere(0.8, 0.2, 0.25, color(0, 1.0, 0), ambientColor, color(1.0, 1.0, 1.0), 6, 0, 0, 0);
+    shadingModel blue_Sphere(0.8, 0.2, 0.25, color(0, 0, 1.0), ambientColor, color(1.0, 1.0, 1.0), 6, 0, 0, 0);
+    shadingModel refl_Sphere(0, 1.0, 0.15, color(1.0, 1.0, 1.0), ambientColor, color(1.0, 1.0, 1.0), 128, 0.8, 0, 0);
+    shadingModel mat0(0.9, 1.0, 0.1, color(0,0,1), ambientColor, color(1.0,1.0,1.0), 4.0, 0, 0, 0);
+    shadingModel mat2(0.9, 1.0, 0.1, color(1,1,0), ambientColor, color(1.0,1.0,1.0), 4.0, 0, 0, 0);
 
 
-
-
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 48; i++)
     {
-        objects.add(make_shared<sphere>(vec3(i*0.1, i * 0.1 - 0.5, -i*0.1), i * 0.05, red_sphere));
-        objects.add(make_shared<sphere>(vec3(-i*0.1, i * 0.1 - 0.5, -i*0.05), i * 0.05, reflective_sphere));
+        shadingModel trans_Sphere(00.2, 1.0, 0, color(1.0, 1.0, 1.0), ambientColor, color(1.0, 1.0, 1.0), 128, 0.3, 1, 1 + i*0.02);
+
+        objects.add(make_shared<sphere>(point3(0.0, 0, 0), 0.2, trans_Sphere));
+        objects.add(make_shared<sphere>(point3(0.0,0,-0.5), 0.1, red_Sphere));
+
+        objects.add(make_shared<sphere>(point3(0.0, -4, -3), 3, white_Sphere));
+
+        //planes
+        vector<point3> points;
+        points.push_back(point3(0,-0.7,-0.5));
+        points.push_back(point3(1,0.4,-1.0));
+        points.push_back(point3(0,-0.7,-1.5));
+
+
+        objects.add(make_shared<polygon>(points, mat0));
+
         points.clear();
-        points.push_back(point3(-0.5,3 - 0.3*i,-3 + 0.2*i));
-        points.push_back(point3(0,2 - 0.3*i,-2+ 0.2*i));
-        points.push_back(point3(0.5,3 - 0.3*i,-3 + 0.2*i));
-        objects.add(make_shared<polygon>(points, green_polygon));
+        points.push_back(point3(0,-0.7,-0.5));
+        points.push_back(point3(0,-0.7,-1.5));
+        points.push_back(point3(-1,0.4,-1));
+
+        objects.add(make_shared<polygon>(points, mat2));
+
+
+        float rad = 0.1309;
+        float light_r = 1;
+        double sphere_r = 0.75;
+        double lightx = sin(rad * -i * 2) * light_r;
+        double lighty = cos(rad * -i * 2) * light_r;
+        double spherex = sin(rad*(i+24)) * sphere_r;
+        double spherey = cos(rad * (i+24)) * sphere_r;
+        lights.push_back(make_shared<point_light>(point3(lightx,1,lighty), color(1,1,0.6), 1.5));
+        lights.push_back(make_shared<distant_light>(lightDir, color(1,1,1), 0.6));
+        objects.add(make_shared<sphere>(point3(spherex,0.25, spherey), 0.2, refl_Sphere));
+
+        scene scene1 = scene(cam, bgColor, objects, lights, 8, WIDTH, HEIGHT);
+        scene1.traceScene("scene_" + to_string(i));
+
+        lights.clear();
+        objects.clear();
     }
 
-    points.clear();
-    points.push_back(point3(-10,-0.5,-3));
-    points.push_back(point3(0,-0.2,10));
-    points.push_back(point3(10,-0.5,-3));
-    //objects.add(make_shared<polygon>(points, blue_polygon));
-
-    objects.add(make_shared<sphere>(vec3(0,-0.5,0.2), 0.1, yellow));
+    
+    
 
 
-    scene scene3(cam, bgColor, lightDir, objects, WIDTH, HEIGHT);
-    scene3.traceScene("scene3");
+    
 
     return 0;
 }

@@ -9,11 +9,8 @@ class shadingModel
     public:
         shadingModel() {}
         
-        shadingModel(color light, double Kd, double Ks, double Ka, color Od, color Oa, color Os, double kgls, double refl, vec3 L)
+        shadingModel(double Kd, double Ks, double Ka, color Od, color Oa, color Os, double kgls, double refl, double Kt, double IOR)
         {
-            Ip = light;
-            this->L = unit_vector(L);
-
             //diffuse
             this->Kd = Kd;
             this->Od = Od;
@@ -29,45 +26,71 @@ class shadingModel
 
             //reflect
             this->refl = refl;
+
+            //transmission
+            this->IOR = IOR;
+            this->Kt = Kt;
         }
 
-        color compute(vec3 normal, vec3 V, double in_shadow, color refl_color)
+        bool is_reflective()
+        {
+            return this->refl;
+        }
+
+        bool is_transmissive()
+        {
+            return this->Kt;
+        }
+
+        color compute_diffuse(vec3 normal, vec3 V, vec3 L, color Ip)
         {
             //diffuse
             color Id = Kd * Ip * Od * max((double)0, dot(normal, L));
             
+            return clamp(Id);
+        }
+
+        color compute_spec(vec3 normal, vec3 V, vec3 L, color Ip)
+        {
+            //specular
+            vec3 R = unit_vector(2 * (dot(normal, -L)) * normal - (-L));
+            color Is = Ks * Ip * Os * pow(max((double)0, dot(V, R)), kgls);
+
+            return clamp(Is);
+        }
+
+        color compute_ambient()
+        {
             //ambient
             color Ia = Ka * Oa * Od;
+            return clamp(Ia);
+        }
+
+        color compute(vec3 normal, vec3 V, vec3 L, color Ip)
+        {
+            //diffuse
+            color Id = Kd * Ip * Od * max((double)0, dot(normal, L));
 
             //specular
             vec3 R = unit_vector(2 * (dot(normal, L)) * normal - L);
             color Is = Ks * Ip * Os * pow(max((double)0, dot(V, R)), kgls);
 
             //reflective
-            return clamp(in_shadow * Is + Ia + in_shadow * Id + refl * refl_color);
-        }
-
-        color compute(vec3 normal, vec3 V, double in_shadow)
-        {
-            //diffuse
-            color Id = Kd * Ip * Od * max((double)0, dot(normal, L));
-            
-            //ambient
+                        //ambient
             color Ia = Ka * Oa * Od;
+            
 
-            //specular
-            vec3 R = unit_vector(2 * (dot(normal, L)) * normal - L);
-            color Is = Ks * Ip * Os * pow(max((double)0, dot(V, R)), kgls);
-
-            //reflective
-
-            return clamp(Is * in_shadow + Ia + Id * in_shadow);
+            return clamp(Is + Ia + Id);
         }
+
+        //reflect
+        double refl;
+
+        double IOR;        //transmission
+        double Kt;
+
 
     private:
-        //light
-        vec3 L;
-        color Ip;
 
         //diffuse
         double Kd;
@@ -82,27 +105,7 @@ class shadingModel
         double kgls;
         color Os;
 
-        //reflect
-        double refl;
 
-        color clamp(color c)
-        {
-            color out = c;
-            if (c.x() > 1)
-            {
-                out[0] = 1;
-            }
-            if (c.y() > 1)
-            {
-                out[1] = 1;
-            }
-            if (c.z() > 1)
-            {
-                out[2] = 1;
-            }
-
-            return out;
-        }
 };
 
 #endif

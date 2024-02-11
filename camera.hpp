@@ -24,9 +24,10 @@ class camera
             plane_height = plane_width;
         }
 
-        ray getRay(int pixel_x, int pixel_y)
+        //returns a ray given the x and y coordinate in screen space
+        ray getRay(float x_coord, float y_coord)
         {
-            vec3 dest((float)pixel_x * plane_width/width - plane_width/2, (float)pixel_y * plane_height/height - plane_height/2, plane_dist);
+            vec3 dest((float)x_coord * plane_width/width - plane_width/2, (float)y_coord * plane_height/height - plane_height/2, plane_dist);
 
             vec3 dir = unit_vector(dest - origin);
 

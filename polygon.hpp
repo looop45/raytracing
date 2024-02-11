@@ -180,12 +180,12 @@ bool polygon::hit(const ray& cam_ray, double t_min, double t_max, hit_record& re
 {
     auto discriminant = dot(normal, cam_ray.direction());
     
-    if (discriminant >= 0)
+    /*if (discriminant >= 0) //double sided or single sided
     {
         return false;
     }
     else
-    {
+    {*/
         double t = (-(dot(normal, cam_ray.origin()) + distance))/(discriminant);
 
         if (t < t_min || t > t_max)
@@ -207,7 +207,7 @@ bool polygon::hit(const ray& cam_ray, double t_min, double t_max, hit_record& re
         rec.material = material;
 
         return true;
-    }
+    //}
 }
 
 #endif
