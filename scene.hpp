@@ -8,6 +8,7 @@
 #include "color.hpp"
 #include "hittable_list.hpp"
 #include "sampler.hpp"
+#include "bvh_tree.hpp"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -18,6 +19,8 @@
 using namespace std;
 
 const int SAMPLES = 4;
+const int REFL_SAMPLES = 5;
+const int REFR_SAMPLES = 10;
 
 class scene
 {
@@ -36,6 +39,9 @@ class scene
 
         void traceScene(string name)
         {
+            //create BVH tree   
+            bvh_tree bvtree(3, surfaces, 1);
+
             //write out file
             ofstream outFile;
             outFile.open(name + ".ppm");
@@ -48,7 +54,7 @@ class scene
                 for (int i = 0; i < WIDTH; i++)
                 {
                     //sampler: structure for generating samples for a given pixel.
-                    sampler Sampler = sampler(SAMPLES, i, j, cam, bgColor);
+                    sampler Sampler = sampler(SAMPLES, REFL_SAMPLES, REFR_SAMPLES, i, j, cam, bgColor);
                     color pixel_color = Sampler.sample_scene(surfaces, lights); //given a list of surfaces, returns a color for the given pixel that the ray intersects
                     write_color(outFile, pixel_color); //writes the color to the ppm file
                 }

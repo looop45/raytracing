@@ -15,6 +15,7 @@ class sphere : public hittable
             s_center = c;
             s_radius = r;
             this->material = material;
+            this->calculate_extents();
         }
 
         point3 center()
@@ -28,12 +29,13 @@ class sphere : public hittable
         }
 
         bool hit(const ray& cam_ray, double t_min, double t_max, hit_record& rec) override;
+        void calculate_extents() override;
+
 
     private:
         point3 s_center;
         double s_radius;
         shadingModel material;
-
 
 };
 
@@ -52,7 +54,7 @@ bool sphere::hit(const ray& cam_ray, double t_min, double t_max, hit_record& rec
     auto root = (-half_b - sqrtd) / a;
     if (root <= t_min || t_max < root) {
         root = (-half_b + sqrtd) / a;
-        if (root < t_min || t_max < root)
+        if (root < t_min || root > t_max)
             return false;
     }
 
@@ -61,9 +63,17 @@ bool sphere::hit(const ray& cam_ray, double t_min, double t_max, hit_record& rec
     rec.d = cam_ray.direction();
     vec3 normal = (rec.p - s_center) / s_radius;
     rec.set_face_normal(cam_ray, normal);
+    //rec.normal = vec3(0,1,0);
     rec.material = material;
 
     return true;
+}
+
+void sphere::calculate_extents()
+{
+    vec3 r_offset = vec3(s_radius, s_radius, s_radius);
+    this->lower_extent = s_center - r_offset;
+    this->upper_extent = s_center + r_offset;
 }
 
 #endif

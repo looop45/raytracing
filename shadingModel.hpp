@@ -8,8 +8,21 @@ class shadingModel
 {
     public:
         shadingModel() {}
-        
-        shadingModel(double Kd, double Ks, double Ka, color Od, color Oa, color Os, double kgls, double refl, double Kt, double IOR)
+        /*
+        Kd -> diffuse gain
+        Ks -> specular gain
+        Ka -> ambient gain
+        Od -> Diffuse color
+        Oa -> Ambient color
+        Os -> Specular color
+        kgls -> Specular exponent
+        refl -> Reflection gain
+        roughness -> Reflection glossiness
+        Kt -> transmission gain
+        IOR -> transmission index of refraction 
+        refr_rough -> refraction roughness
+        */
+        shadingModel(double Kd, double Ks, double Ka, color Od, color Oa, color Os, double kgls, double refl, double roughness, double Kt, double IOR, double refr_rough)
         {
             //diffuse
             this->Kd = Kd;
@@ -26,10 +39,13 @@ class shadingModel
 
             //reflect
             this->refl = refl;
+            this->roughness = roughness;
 
             //transmission
             this->IOR = IOR;
             this->Kt = Kt;
+            this->refr_rough = refr_rough;
+            
         }
 
         bool is_reflective()
@@ -85,9 +101,11 @@ class shadingModel
 
         //reflect
         double refl;
+        double roughness;
 
         double IOR;        //transmission
         double Kt;
+        double refr_rough;
 
 
     private:

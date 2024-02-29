@@ -13,7 +13,8 @@ class light
         color col = color(1,1,1);
 
         light() {}
-
+        bool isArea = false;
+        int samples = 0;
 
 };
 

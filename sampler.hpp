@@ -18,11 +18,13 @@ class sampler
 {
     public:
         //requires desired sample (power of 2) and pixel coordinates
-        sampler(int samples, int pixel_x, int pixel_y, camera cam, color bgColor)
+        sampler(int samples, int refl_samples, int refr_samples, int pixel_x, int pixel_y, camera cam, color bgColor)
         {
             this->pixel_x = pixel_x;
             this->pixel_y = pixel_y;
             this->samples = samples;
+            this->refl_samples = refl_samples;
+            this->refr_samples = refr_samples;
             this->cam = cam;
             this->bgColor = bgColor;
         }
@@ -34,6 +36,8 @@ class sampler
         int pixel_x;
         int pixel_y;
         int samples;
+        int refl_samples;
+        int refr_samples;
 
         color bgColor;
 
@@ -85,7 +89,7 @@ color sampler::ray_color(const ray& r, hittable& world, vector<shared_ptr<light>
                 color out(0,1,0);
 
                 //
-                hit_tree tree(r, rec, world, lights, bgColor);
+                hit_tree tree(r, rec, world, lights, bgColor, refl_samples, refr_samples);
                 out = tree.evaluate();
 
                 return out;

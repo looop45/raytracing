@@ -27,6 +27,7 @@ class polygon : public hittable
         point3 normal;
         double distance;
         vector<point3> points;
+        void calculate_extents() override;
 
         vec3 compute_normal(vector<point3> points)
         {
@@ -208,6 +209,53 @@ bool polygon::hit(const ray& cam_ray, double t_min, double t_max, hit_record& re
 
         return true;
     //}
+}
+
+void polygon::calculate_extents()
+{
+    double max_x = 0;
+    double max_y = 0;
+    double max_z = 0;
+
+    double min_x = 0;
+    double min_y = 0;
+    double min_z = 0;
+
+    for (point3 point : points)
+    {
+        //x component
+        if (point.x() > max_x)
+        {
+            max_x = point.x();
+        }
+        else if(point.x() < min_x)
+        {
+            min_x = point.x();
+        }
+
+        //y component
+        if (point.y() > max_y)
+        {
+            max_y = point.y();
+        }
+        else if(point.y() < min_y)
+        {
+            min_y = point.y();
+        }
+
+        //z component
+        if (point.z() > max_z)
+        {
+            max_z = point.z();
+        }
+        else if(point.z() < min_z)
+        {
+            min_z = point.z();
+        }
+    } 
+
+    this->lower_extent = point3(min_x, min_y, min_z);
+    this->upper_extent = point3(max_x, max_y, max_z);
 }
 
 #endif

@@ -95,6 +95,11 @@ inline vec3 operator*(const vec3 &u, const vec3 &v)
     return vec3(u.o[0] * v.o[0], u.o[1] * v.o[1], u.o[2] * v.o[2]);
 }
 
+inline vec3 operator/(const vec3 &u, const vec3 &v) 
+{
+    return vec3(u.o[0] / v.o[0], u.o[1] / v.o[1], u.o[2] / v.o[2]);
+}
+
 inline vec3 operator*(double t, const vec3 &v) 
 {
     return vec3(t*v.o[0], t*v.o[1], t*v.o[2]);
@@ -108,6 +113,30 @@ inline vec3 operator*(const vec3 &v, double t)
 inline vec3 operator/(vec3 v, double t) 
 {
     return (1/t) * v;
+}
+
+inline bool operator<=(const point3& v1, const point3& v2)
+{
+    if (v1.o[0] <= v2.o[0] && v1.o[1] <= v2.o[1] && v1.o[2] <= v2.o[2])
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+inline bool operator>=(const vec3 v1, const vec3 v2)
+{
+    if (v1.o[0] >= v2.o[0] && v1.o[1] >= v2.o[1] && v1.o[2] >= v2.o[2])
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    } 
 }
 
 inline double dot(const vec3 &u, const vec3 &v) 

@@ -19,13 +19,21 @@ class hit_record
             front_face = dot(r.direction(), outward_normal) < 0;
             normal = front_face ? outward_normal :-outward_normal;
         }
+
     
 };
 
 class hittable {
     public:
-        virtual bool hit(const ray&
-         cam_ray, double t_min, double t_max, hit_record& rec) = 0;
+        virtual bool hit(const ray& cam_ray, double t_min, double t_max, hit_record& rec) = 0;
+
+        point3 get_lower_extent()  { return this->lower_extent; }
+        point3 get_upper_extent()  { return this->upper_extent; } 
+    protected:
+        point3 lower_extent;
+        point3 upper_extent;
+        virtual void calculate_extents() = 0;
+
 };
 
 #endif
