@@ -39,7 +39,7 @@ class hit_tree
     public:
         hit_tree(ray r, hit_record rec, hittable& world, vector<shared_ptr<light> > lights, color bgColor, int refl_samples, int refr_samples) : world(world), lights(lights)
         {
-            const int DEPTH = 2;
+            const int DEPTH = 3;
 
             root.r = r;
             root.rec = rec;
@@ -99,7 +99,7 @@ color hit_tree::node_solve(hit_node* node)
     {
         refl_color = bgColor;
     }
-    refl_color = refl_color * node->rec.material.refl;
+    refl_color = refl_color * node->rec.material->refl;
 
     //evaluate transmission component
     if (node->transmission_ray.size() != 0)
@@ -117,7 +117,7 @@ color hit_tree::node_solve(hit_node* node)
     {
         trans_color = bgColor;
     }
-    trans_color = trans_color * node->rec.material.Kt;
+    trans_color = trans_color * node->rec.material->Kt;
 
     //diffuse spec component
     for (const auto& light : lights)
@@ -136,8 +136,8 @@ color hit_tree::node_solve(hit_node* node)
                     //cout << light->samples << endl;
                     if(!world.hit(shadow_ray, 0.001, infinity, shadow_hit))
                     {
-                        color diffuse_lobe = node->rec.material.compute_diffuse(node->rec.normal, node->r.direction(), light_direction, light->col);
-                        color spec_lobe = node->rec.material.compute_spec(node->rec.normal, node->r.direction(), light_direction, light->col);
+                        color diffuse_lobe = node->rec.material->compute_diffuse(node->rec.normal, node->r.direction(), light_direction, light->col, node->rec.uv);
+                        color spec_lobe = node->rec.material->compute_spec(node->rec.normal, node->r.direction(), light_direction, light->col);
                         out += (light->intensity(p) * (diffuse_lobe + spec_lobe)) / pow(light->samples, 2);
                     }
                 }
@@ -152,14 +152,14 @@ color hit_tree::node_solve(hit_node* node)
 
                 if(!world.hit(shadow_ray, 0.001, infinity, shadow_hit))
                 {
-                    color diffuse_lobe = node->rec.material.compute_diffuse(node->rec.normal, node->r.direction(), light_direction, light->col);
-                    color spec_lobe = node->rec.material.compute_spec(node->rec.normal, node->r.direction(), light_direction, light->col);
+                    color diffuse_lobe = node->rec.material->compute_diffuse(node->rec.normal, node->r.direction(), light_direction, light->col, node->rec.uv);
+                    color spec_lobe = node->rec.material->compute_spec(node->rec.normal, node->r.direction(), light_direction, light->col);
                     out += light->intensity(p) * (diffuse_lobe + spec_lobe);
 
                 }
             }
         }
-    color ambient_term = node->rec.material.compute_ambient();
+    color ambient_term = node->rec.material->compute_ambient(node->rec.uv);
     
     return clamp(out + refl_color + ambient_term + trans_color);
 }
@@ -168,19 +168,19 @@ hit_node* hit_tree::construct_tree(int depth, hit_node& node)
 {
 
     //reflections
-    if(node.rec.material.is_reflective())
+    if(node.rec.material->is_reflective())
     {
         for (int i = 0; i < refl_samples; i++)
         {
-            node.reflection_ray.push_back(node.get_reflection_ray(depth, refl_samples, refr_samples, world, node.rec.material.roughness));
+            node.reflection_ray.push_back(node.get_reflection_ray(depth, refl_samples, refr_samples, world, node.rec.material->roughness));
         }
     }
     //refraction
-    if (node.rec.material.is_transmissive())
+    if (node.rec.material->is_transmissive())
     {
         for (int i = 0; i < refl_samples; i++)
         {
-            node.transmission_ray.push_back(node.get_transmission_ray(depth, refl_samples, refr_samples, world, node.rec.material.refr_rough));
+            node.transmission_ray.push_back(node.get_transmission_ray(depth, refl_samples, refr_samples, world, node.rec.material->refr_rough));
         }
     }
     //hit_node* refraction_node = node.get
@@ -191,17 +191,17 @@ hit_node* hit_tree::construct_tree(int depth, hit_node& node)
 
 hit_node* hit_node::get_transmission_ray(int depth, int refl_samples, int refr_samples, hittable& world, double rough)
 {
-    if (depth <= 0 || !this->rec.material.is_transmissive())
+    if (depth <= 0 || !this->rec.material->is_transmissive())
     {
         return nullptr;
     }
 
-    double n2 = this->rec.material.IOR;
+    double n2 = this->rec.material->IOR;
     double n1 = 1;
 
-    if (this-> parent != nullptr && this->parent->rec.material.is_transmissive())
+    if (this-> parent != nullptr && this->parent->rec.material->is_transmissive())
     {
-        n1 = this->parent->rec.material.IOR;
+        n1 = this->parent->rec.material->IOR;
         n2 = 1;
     }
 
@@ -230,18 +230,18 @@ hit_node* hit_node::get_transmission_ray(int depth, int refl_samples, int refr_s
 
         for (int i = 0; i < refr_samples; i++)
         {
-            hit_node* transmission = trans_node->get_transmission_ray(depth-1, refl_samples, refr_samples, world, trans_node->rec.material.refr_rough);
+            hit_node* transmission = trans_node->get_transmission_ray(depth-1, refl_samples, refr_samples, world, trans_node->rec.material->refr_rough);
             if (transmission != nullptr)
             {
                 trans_node->transmission_ray.push_back(transmission);
             }
         }
         //secondary reflections
-        if (rec.material.is_reflective())
+        if (rec.material->is_reflective())
         {
             for (int i = 0; i < refl_samples; i++)
             {
-                hit_node* reflection = trans_node->get_reflection_ray(depth-1, refl_samples, refr_samples, world, trans_node->rec.material.roughness);
+                hit_node* reflection = trans_node->get_reflection_ray(depth-1, refl_samples, refr_samples, world, trans_node->rec.material->roughness);
                 if (reflection != nullptr)
                 {
                     trans_node->reflection_ray.push_back(reflection);
@@ -262,7 +262,7 @@ hit_node* hit_node::get_reflection_ray(int depth, int refl_samples, int refr_sam
     //std::uniform_real_distribution<float> pos_dist(0.0f, 1.0f);
 
     //base case, depth reached, none-reflective
-    if (depth <= 0 || !this->rec.material.is_reflective())
+    if (depth <= 0 || !this->rec.material->is_reflective())
     {
         return nullptr;
     }
@@ -287,18 +287,18 @@ hit_node* hit_node::get_reflection_ray(int depth, int refl_samples, int refr_sam
         //reflection rays
         for (int i = 0; i < refl_samples; i++)
         {
-            hit_node* reflection = refl_node->get_reflection_ray(depth-1, refl_samples, refr_samples, world, refl_node->rec.material.roughness);
+            hit_node* reflection = refl_node->get_reflection_ray(depth-1, refl_samples, refr_samples, world, refl_node->rec.material->roughness);
             if (reflection != nullptr)
             {
                 refl_node->reflection_ray.push_back(reflection);
             }
         }
         //secondary transmission
-        if (rec.material.is_transmissive())
+        if (rec.material->is_transmissive())
         {
             for (int i = 0; i < refr_samples; i++)
             {
-                hit_node* transmission = refl_node->get_transmission_ray(depth-1, refl_samples, refr_samples, world, refl_node->rec.material.refr_rough);
+                hit_node* transmission = refl_node->get_transmission_ray(depth-1, refl_samples, refr_samples, world, refl_node->rec.material->refr_rough);
                 if (transmission != nullptr)
                 {
                     refl_node->transmission_ray.push_back(transmission);

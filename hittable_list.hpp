@@ -16,7 +16,7 @@ class hittable_list : public hittable {
 
         void clear() { objects.clear(); }
         void add(shared_ptr<hittable> object) { objects.push_back(object); }
-
+        void add(hittable_list mesh) { objects.insert(objects.end(), mesh.objects.begin(), mesh.objects.end()); }
         virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) override;
 
         point3 get_upper_extent();

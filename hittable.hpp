@@ -2,6 +2,7 @@
 #define HITTABLE_H
 
 #include "ray.hpp"
+#include "vec2.hpp"
 
 class hit_record 
 {
@@ -9,7 +10,8 @@ class hit_record
         point3 p;
         vec3 normal;
         double t;
-        shadingModel material;
+        vec2 uv;
+        shadingModel* material;
         bool front_face;
         vec3 d;
         int id;

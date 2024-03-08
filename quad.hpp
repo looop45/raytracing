@@ -2,6 +2,7 @@
 #define QUAD_H
 
 #include "vec3.hpp"
+#include "vec2.hpp"
 #include "ray.hpp"
 #include <math.h>
 #include "shadingModel.hpp"
@@ -10,7 +11,7 @@
 class quad : public hittable
 {
     public:
-        quad(point3 Q, vec3 u, vec3 v, shadingModel material)
+        quad(point3 Q, vec3 u, vec3 v, shadingModel* material)
         {
             this->Q = Q;
             this->u = u;
@@ -18,8 +19,9 @@ class quad : public hittable
 
             this->material = material;
 
-            normal = unit_vector(cross(u, v));
-            this->w = normal / dot(normal,normal);
+            auto n = cross(u,v);
+            normal = unit_vector(n);
+            this->w = n / dot(n,n);
             D = dot(normal, Q);
 
             this->calculate_extents();
@@ -31,9 +33,10 @@ class quad : public hittable
             this->u = u;
             this->v = v;
 
-            normal = unit_vector(cross(u, v));
-            this->w = normal / dot(normal,normal);
-            D = dot(normal, Q);
+            auto n = cross(u,v);
+            normal = unit_vector(n);
+            this->w = n / dot(n,n);
+            this->D = dot(normal, Q);
         }
 
         quad() {}
@@ -50,7 +53,7 @@ class quad : public hittable
         vec3 normal;
         double D;
         vec3 w; 
-        shadingModel material;
+        shadingModel* material;
 
 
 };
@@ -64,7 +67,7 @@ bool quad::hit(const ray& cam_ray, double t_min, double t_max, hit_record& rec)
         return false;
 
     // Return false if the hit point parameter t is outside the ray interval.
-    auto t = (D - dot(normal, cam_ray.origin())) / denom;
+    auto t = (this->D - dot(normal, cam_ray.origin())) / denom;
     if (t < t_min || t > t_max)
         return false;
 
@@ -78,6 +81,7 @@ bool quad::hit(const ray& cam_ray, double t_min, double t_max, hit_record& rec)
         return false;
 
     rec.t = t;
+    rec.uv = vec2(alpha, 1-beta);
     rec.p = intersection;
     rec.material = material;
     rec.set_face_normal(cam_ray, normal);

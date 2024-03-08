@@ -2,53 +2,58 @@
 #define POLY_H
 
 #include "vec3.hpp"
+#include "vertex.hpp"
 #include "vec2.hpp"
 #include "ray.hpp"
 #include <math.h>
 #include "shadingModel.hpp"
 #include "hittable.hpp"
 #include <vector>
+#include "vertex.hpp"
+
+using namespace std;
 
 class polygon : public hittable
 {
     public:
-        polygon(vector<point3> points, shadingModel material) 
+        polygon(vector<shared_ptr<vertex>> vertices, shadingModel* material) 
         {
             this->material = material;
-            this->normal = compute_normal(points);
-            this->distance = compute_dist(points.at(0), normal);
-            this->points = points;
+            this->normal = compute_normal(vertices);
+            this->distance = compute_dist(vertices.at(0), normal);
+            this->vertices = vertices;
+            calculate_extents();
         }
 
         bool hit(const ray& cam_ray, double t_min, double t_max, hit_record& rec) override;
 
     private:
-        shadingModel material;
+        shadingModel* material;
         point3 normal;
         double distance;
-        vector<point3> points;
+        vector<shared_ptr<vertex>> vertices;
         void calculate_extents() override;
 
-        vec3 compute_normal(vector<point3> points)
+        vec3 compute_normal(vector<shared_ptr<vertex>> vertices)
         {
-            vec3 v1 = points.at(1) - points.at(0);
-            vec3 v2 = points.at(2) - points.at(0);
+            vec3 v1 = *vertices.at(1) - *vertices.at(0);
+            vec3 v2 = *vertices.at(2) - *vertices.at(0);
 
             return unit_vector(cross(v1, v2));
         }
 
-        double compute_dist(point3 point, vec3 normal)
+        double compute_dist(shared_ptr<vertex> point, vec3 normal)
         {
-            double d = -(point.x() * normal.x()+ point.y() * normal.y() + point.z() * normal.z());
+            double d = -(point->x() * normal.x()+ point->y() * normal.y() + point->z() * normal.z());
             return d;
         }
 
-        vector<point2> project2d(vector<point3> points)
+        vector<point2> project2d(vector<shared_ptr<vertex>> vertices)
         {
             //find which axis to project onto
             int dom_offset;
 
-            vector<point2> points2d;
+            vector<point2> vertices2d;
             if (maximize(normal) == normal.x())
             {
                 dom_offset = 0;
@@ -62,9 +67,9 @@ class polygon : public hittable
                 dom_offset = 2;
             }
 
-            for (int i = 0; i < points.size(); i++)
+            for (int i = 0; i < vertices.size(); i++)
             {
-                point3 point3d = points.at(i);
+                vertex point3d = *vertices.at(i);
                 point2 new_point;
                 if (dom_offset == 0)
                 {
@@ -78,9 +83,9 @@ class polygon : public hittable
                 {
                     new_point = point2(point3d.x(), point3d.y());
                 }
-                points2d.push_back(new_point);
+                vertices2d.push_back(new_point);
             }
-            return points2d;
+            return vertices2d;
         }
 
         point2 project2d(point3 intersect)
@@ -105,8 +110,8 @@ class polygon : public hittable
 
         bool test_crossings(point3 intersection)
         {
-            //convert points
-            vector<point2> points2d = project2d(points);
+            //convert vertices
+            vector<point2> points2d = project2d(vertices);
 
             point2 intersect2d = project2d(intersection);
 
@@ -211,6 +216,8 @@ bool polygon::hit(const ray& cam_ray, double t_min, double t_max, hit_record& re
     //}
 }
 
+
+
 void polygon::calculate_extents()
 {
     double max_x = 0;
@@ -221,36 +228,36 @@ void polygon::calculate_extents()
     double min_y = 0;
     double min_z = 0;
 
-    for (point3 point : points)
+    for (shared_ptr<point3> point : vertices)
     {
         //x component
-        if (point.x() > max_x)
+        if (point->x() > max_x)
         {
-            max_x = point.x();
+            max_x = point->x();
         }
-        else if(point.x() < min_x)
+        else if(point->x() < min_x)
         {
-            min_x = point.x();
+            min_x = point->x();
         }
 
         //y component
-        if (point.y() > max_y)
+        if (point->y() > max_y)
         {
-            max_y = point.y();
+            max_y = point->y();
         }
-        else if(point.y() < min_y)
+        else if(point->y() < min_y)
         {
-            min_y = point.y();
+            min_y = point->y();
         }
 
         //z component
-        if (point.z() > max_z)
+        if (point->z() > max_z)
         {
-            max_z = point.z();
+            max_z = point->z();
         }
-        else if(point.z() < min_z)
+        else if(point->z() < min_z)
         {
-            min_z = point.z();
+            min_z = point->z();
         }
     } 
 

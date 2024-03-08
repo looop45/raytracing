@@ -1,10 +1,10 @@
 #ifndef BVH_TREE_H
 #define BVH_TREE_H
 
-#include "hittable.hpp";
-#include "hittable_list.hpp";
-#include "bounding_volume.hpp";
-#include "shadingModel.hpp";
+#include "hittable.hpp"
+#include "hittable_list.hpp"
+#include "bounding_volume.hpp"
+#include "shadingModel.hpp"
 
 #include <memory>
 #include <vector>
@@ -200,15 +200,18 @@ bool bvh_tree::recursive_ray(shared_ptr<node> curr_node, const ray& cam_ray, dou
 {
     hit_record temp_rec;
     //check if hit children in subspace
-    if (curr_node->isLeaf && curr_node->children.hit(cam_ray, t_min, t_max, temp_rec))
+    if (curr_node->isLeaf)
     {
-        //shadingModel white_Sphere(0.8, 0.2, 0.25, color(1.0, 1.0, 1.0), color(0.1,0.1,0.1), color(1.0, 1.0, 1.0), 32, 0, 0, 0);
-        //rec.normal = vec3(0,1,0);
-        //color c(0.4,0.4,0.4);
-        //curr_node->box.hit(cam_ray, t_min, t_max, rec, curr_node->leftRight * c);
-        //rec.material = white_Sphere;
-        rec = temp_rec;
-        return true;
+        if (curr_node->children.hit(cam_ray, t_min, t_max, temp_rec))
+        {
+            //shadingModel white_Sphere(0.8, 0.2, 0.25, color(1.0, 1.0, 1.0), color(0.1,0.1,0.1), color(1.0, 1.0, 1.0), 32, 0, 0, 0);
+            //rec.normal = vec3(0,1,0);
+            //color c(0.4,0.4,0.4);
+            //curr_node->box.hit(cam_ray, t_min, t_max, rec, curr_node->leftRight * c);
+            //rec.material = white_Sphere;
+            rec = temp_rec;
+            return true;
+        }
     }
     //if not, check left and right subspaces
     hit_record left_rec;

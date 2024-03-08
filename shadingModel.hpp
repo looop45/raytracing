@@ -2,6 +2,8 @@
 #define SMODEL_H
 
 #include "vec3.hpp"
+#include "vec2.hpp"
+#include "image_texture.hpp"
 #include <math.h>
 
 class shadingModel
@@ -48,6 +50,32 @@ class shadingModel
             
         }
 
+        shadingModel(double Kd, double Ks, double Ka, image_texture* Od_image, color Oa, color Os, double kgls, double refl, double roughness, double Kt, double IOR, double refr_rough)
+        {
+            //diffuse
+            this->Kd = Kd;
+            this->Od_image = Od_image;
+            this->Od_hasImage = true;
+
+            //ambient
+            this->Ka = Ka;
+            this->Oa = Oa;
+
+            //specular
+            this->Ks = Ks;
+            this->kgls = kgls;
+            this->Os = Os;
+
+            //reflect
+            this->refl = refl;
+            this->roughness = roughness;
+
+            //transmission
+            this->IOR = IOR;
+            this->Kt = Kt;
+            this->refr_rough = refr_rough;
+        }
+
         bool is_reflective()
         {
             return this->refl;
@@ -58,11 +86,18 @@ class shadingModel
             return this->Kt;
         }
 
-        color compute_diffuse(vec3 normal, vec3 V, vec3 L, color Ip)
+        color compute_diffuse(vec3 normal, vec3 V, vec3 L, color Ip, vec2 uv)
         {
+            color Id;
             //diffuse
-            color Id = Kd * Ip * Od * max((double)0, dot(normal, L));
-            
+            if (this->Od_hasImage)
+            {
+                Id = Kd * Ip * Od_image->value(uv[0], uv[1]) * max((double)0, dot(normal, L));
+            }
+            else 
+            { 
+                Id = Kd * Ip * Od * max((double)0, dot(normal, L));
+            }
             return clamp(Id);
         }
 
@@ -75,10 +110,18 @@ class shadingModel
             return clamp(Is);
         }
 
-        color compute_ambient()
+        color compute_ambient(vec2 uv)
         {
+            color Ia;
             //ambient
-            color Ia = Ka * Oa * Od;
+            if (this->Od_hasImage)
+            {
+                Ia = Ka * Oa * Od_image->value(uv[0], uv[1]);
+            }
+            else 
+            { 
+                Ia = Ka * Oa * Od;
+            }
             return clamp(Ia);
         }
 
@@ -108,11 +151,13 @@ class shadingModel
         double refr_rough;
 
 
-    private:
+    protected:
 
         //diffuse
         double Kd;
         color Od;
+        image_texture* Od_image = nullptr;
+        bool Od_hasImage = false;
 
         //ambient
         double Ka;

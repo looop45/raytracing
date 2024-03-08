@@ -10,7 +10,7 @@
 class sphere : public hittable
 {
     public:
-        sphere(vec3 c, double r, shadingModel material) 
+        sphere(vec3 c, double r, shadingModel* material) 
         {
             s_center = c;
             s_radius = r;
@@ -35,7 +35,7 @@ class sphere : public hittable
     private:
         point3 s_center;
         double s_radius;
-        shadingModel material;
+        shadingModel* material;
 
 };
 
@@ -58,10 +58,21 @@ bool sphere::hit(const ray& cam_ray, double t_min, double t_max, hit_record& rec
             return false;
     }
 
+    //hit record
     rec.t = root;
     rec.p = cam_ray.at(rec.t);
     rec.d = cam_ray.direction();
     vec3 normal = (rec.p - s_center) / s_radius;
+
+    //uv coordinates
+    const double pi = 3.1415;
+    auto theta = acos(-normal.y());
+    auto phi = atan2(-normal.z(), normal.x()) + pi;
+
+    auto u = phi / (2*pi);
+    auto v =  1 - (theta / pi);
+    rec.uv = vec2(u, v);
+
     rec.set_face_normal(cam_ray, normal);
     //rec.normal = vec3(0,1,0);
     rec.material = material;
