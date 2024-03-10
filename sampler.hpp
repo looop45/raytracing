@@ -49,11 +49,7 @@ class sampler
 //casts random rays into scene for given pixel and sample count, returns averaged color
 color sampler::sample_scene(hittable& world, vector<shared_ptr<light>> lights)
 {
-    // Seed the random number generator
-    std::random_device rd;
-    std::mt19937 gen(rd());
 
-    std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
 
     int sample_total = pow(samples, 2);
     float pixel_resolution =  1 / (float)samples;
@@ -86,7 +82,7 @@ color sampler::ray_color(const ray& r, hittable& world, vector<shared_ptr<light>
             if (world.hit(r, 0, infinity, rec))
             {
                 //default color
-                color out(0,1,0);
+                color out = color(0,0,0);
 
                 //
                 hit_tree tree(r, rec, world, lights, bgColor, refl_samples, refr_samples);

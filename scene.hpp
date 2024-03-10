@@ -18,8 +18,8 @@
 
 using namespace std;
 
-const int SAMPLES = 6;
-const int REFL_SAMPLES = 5;
+const int SAMPLES = 2;
+const int REFL_SAMPLES = 2;
 const int REFR_SAMPLES = 4;
 
 class scene
@@ -40,7 +40,7 @@ class scene
         void traceScene(string name)
         {
             //create BVH tree   
-            bvh_tree bvtree(5, surfaces, 1);
+            bvh_tree bvtree(2, surfaces, 1);
 
             //write out file
             ofstream outFile;

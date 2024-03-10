@@ -72,20 +72,20 @@ int main()
         objects.add(make_shared<sphere>(point3(x * 0.5, y * 0.5, -1) , 0.1, thing));
     }*/
 
-    objects.add(make_shared<quad>(point3(-1, -1, 0), vec3(2,0,0), vec3(0,0.1,-2), &marble));
+    /*objects.add(make_shared<quad>(point3(-1, -1, 0), vec3(2,0,0), vec3(0,0.1,-2), &marble));
     objects.add(make_shared<quad>(point3(-1, -1, 0), vec3(0,0,-2), vec3(0,2,0), &marble));
     objects.add(make_shared<quad>(point3(-1, -1, -1), vec3(2,0,0), vec3(0,2,0), &marble));
     objects.add(make_shared<quad>(point3(-1, 1, 0), vec3(2,0,0), vec3(0,0,-2), &marble));
     objects.add(make_shared<quad>(point3(1, -1, 0), vec3(0,0,-2), vec3(0,2,0), &marble));
-
+*/
     
-    //objects.add(mesh("suzanne.obj", point3(0, -0.5, -2), 0.5, &red_Sphere));
+    objects.add(mesh("suztex.obj", point3(0, -0.5, -2), 1, &parris));
     //objects.add(mesh("plane.obj", point3(0,0,-2), 1, &parris));
-    objects.add(make_shared<sphere>(point3(-0.5, 0, -1), 0.3, &parris));
-    objects.add(make_shared<sphere>(point3(0, 1, -1), 0.3, &parris));
-    objects.add(make_shared<sphere>(point3(0, -1, -1), 0.3, &parris));
+    //objects.add(make_shared<sphere>(point3(-0.5, 0, -1), 0.3, &parris));
+    //objects.add(make_shared<sphere>(point3(0, 1, -1), 0.3, &parris));
+    //objects.add(make_shared<sphere>(point3(0, -1, -1), 0.3, &parris));
 
-    objects.add(make_shared<sphere>(point3(0.5, 0, -1), 0.3, &parris));
+    //objects.add(make_shared<sphere>(point3(0.5, 0, -1), 0.3, &parris));
     //objects.add(make_shared<sphere>(point3(-0.5,0,0) + translate, 0.2, translucent));
     //objects.add(make_shared<sphere>(point3(-0.5,0,-1) + translate, 0.2, blue_Sphere));
 
@@ -99,23 +99,23 @@ int main()
 
     //planes
     vector<shared_ptr<vertex>> points;
-    points.push_back(make_shared<vertex>(-2,-0.75,0));
-    points.push_back(make_shared<vertex>(2,-0.75,0));
-    points.push_back(make_shared<vertex>(-2,-0.75,-5));
+    points.push_back(make_shared<vertex>(-2,-1,-1));
+    points.push_back(make_shared<vertex>(2,-1,-1));
+    points.push_back(make_shared<vertex>(-2,1,-1));
 
-    //objects.add(make_shared<polygon>(points, mat0));
+    //objects.add(make_shared<polygon>(points, &mat0));
 
     points.clear();
     points.push_back(make_shared<vertex>(-2,-0.75,-5));
     points.push_back(make_shared<vertex>(2,-0.75,0));
     points.push_back(make_shared<vertex>(2,-0.75,-5));
 
-    //objects.add(make_shared<polygon>(points, mat0));
+    //objects.add(make_shared<polygon>(points, &mat0));
 
 
-    //lights.push_back(make_shared<point_light>(point3(-1,1,1), color(1,1,0.6), 1.5));
+    lights.push_back(make_shared<point_light>(point3(-1,1,1), color(1,1,0.6), 1.5));
     //lights.push_back(make_shared<distant_light>(lightDir, color(1,1,1), 0.6));
-    lights.push_back(make_shared<area_light>(point3(-0.4, 0.5, 0.5), vec3(0,-0.5,0), vec3(0.8,0,0), color(1,1,1), 2, 8));
+    lights.push_back(make_shared<area_light>(point3(-0.4, 1, 0), vec3(1,0,0), vec3(0,0,-1), color(1,1,1), 2, 4));
     //objects.add(make_shared<sphere>(point3(spherex,0.25, spherey), 0.2, refl_Sphere));
 
     scene scene1 = scene(cam, bgColor, objects, lights, 8, WIDTH, HEIGHT); 

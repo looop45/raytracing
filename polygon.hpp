@@ -13,6 +13,9 @@
 
 using namespace std;
 
+const double ZERO_BIAS = 0.0001;
+const int SHADE_SMOOTH = 0;
+
 class polygon : public hittable
 {
     public:
@@ -48,172 +51,69 @@ class polygon : public hittable
             return d;
         }
 
-        vector<point2> project2d(vector<shared_ptr<vertex>> vertices)
-        {
-            //find which axis to project onto
-            int dom_offset;
-
-            vector<point2> vertices2d;
-            if (maximize(normal) == normal.x())
-            {
-                dom_offset = 0;
-            }
-            else if (maximize(normal) == normal.y())
-            {
-                dom_offset = 1;
-            }
-            else
-            {
-                dom_offset = 2;
-            }
-
-            for (int i = 0; i < vertices.size(); i++)
-            {
-                vertex point3d = *vertices.at(i);
-                point2 new_point;
-                if (dom_offset == 0)
-                {
-                    new_point = point2(point3d.y(), point3d.z());
-                }
-                else if (dom_offset == 1)
-                {
-                    new_point = point2(point3d.x(), point3d.z());
-                }
-                else
-                {
-                    new_point = point2(point3d.x(), point3d.y());
-                }
-                vertices2d.push_back(new_point);
-            }
-            return vertices2d;
-        }
-
-        point2 project2d(point3 intersect)
-        {
-
-            point2 new_point;
-            if (maximize(normal) == normal.x())
-            {
-                new_point = point2(intersect.y(), intersect.z());
-            }
-            else if (maximize(normal) == normal.y())
-            {
-                new_point = point2(intersect.x(), intersect.z());
-            }
-            else
-            {
-                new_point = point2(intersect.x(), intersect.y());
-            }
-
-            return new_point;
-        }
-
-        bool test_crossings(point3 intersection)
-        {
-            //convert vertices
-            vector<point2> points2d = project2d(vertices);
-
-            point2 intersect2d = project2d(intersection);
-
-            //translate
-            for (int i = 0; i < points2d.size(); i++)
-            {
-                points2d.at(i) = points2d.at(i) - intersect2d;
-            }
-
-            int num_crossings = 0;
-            int sign_holder;
-
-            if (points2d.at(0).v() < 0)
-            {
-                sign_holder = -1;
-            }
-            else{
-                sign_holder = 1;
-            }
-
-            //loop
-            for (int i = 0; i < points2d.size(); i++)
-            {
-                int next_signholder;
-                //wrap around
-                int next = i + 1;
-                if (next == points2d.size())
-                {
-                    next = 0;
-                }
-
-                if (points2d.at(next).v() < 0)
-                {
-                    next_signholder  = -1;
-                }
-                else
-                {
-                    next_signholder = 1;
-                }
-
-                //check signs
-                if (sign_holder != next_signholder)
-                {
-                    if (points2d.at(i).u() > 0 && points2d.at(next).u() > 0)
-                    {
-                        num_crossings++;
-                    }
-                    else if (points2d.at(i).u() > 0 || points2d.at(next).u() > 0)
-                    {
-                        auto ucross = points2d.at(i).u() - points2d.at(i).v() * (points2d.at(next).u() - points2d.at(i).u()) / (points2d.at(next).v() - points2d.at(i).v());\
-
-                        if (ucross > 0)
-                        {
-                            num_crossings++;
-                        }
-                    }
-                    sign_holder = next_signholder;
-                }
-            }
-            
-            if (num_crossings % 2 == 0)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
 };
 
 bool polygon::hit(const ray& cam_ray, double t_min, double t_max, hit_record& rec)
 {
-    auto discriminant = dot(normal, cam_ray.direction());
+    //supporting plane tests
+    auto denom = dot(normal,cam_ray.direction());
     
-    /*if (discriminant >= 0) //double sided or single sided
+    if (denom < ZERO_BIAS && denom > -ZERO_BIAS)
     {
         return false;
     }
-    else
-    {*/
-        double t = (-(dot(normal, cam_ray.origin()) + distance))/(discriminant);
 
-        if (t < t_min || t > t_max)
-        {
-            return false;
-        }
+    auto d = dot(normal, *vertices.at(0));
+    auto t = (d - dot(normal, cam_ray.origin())) / denom;
 
-        point3 intersection = cam_ray.at(t);
+    if (t < t_min || t > t_max)
+    {
+        return false;
+    }
 
-        if (!test_crossings(intersection))
-        {
-            return false;
-        }
+    auto Q = cam_ray.at(t);
 
-        rec.set_face_normal(cam_ray, normal);
-        rec.d = cam_ray.direction();
-        rec.t = t;
-        rec.p = intersection;
-        rec.material = material;
+    //inside triangle tests and barycentric numerators
 
-        return true;
-    //}
+    auto BA = *vertices.at(1) - *vertices.at(0);
+
+    auto numer_1 = dot(cross(BA, (Q - *vertices.at(0))), normal);
+    auto numer_2 = dot(cross((*vertices.at(2) - *vertices.at(1)), (Q - *vertices.at(1))), normal);
+    auto numer_3 = dot(cross((*vertices.at(0) - *vertices.at(2)), (Q - *vertices.at(2))), normal);
+
+    if (numer_1 < 0)
+    {
+        return false;
+    }
+    if (numer_2 < 0)
+    {
+        return false;
+    }
+    if (numer_3 < 0)
+    {
+        return false;
+    }
+    
+    auto bary_denom = dot(cross(BA, (*vertices.at(2) - *vertices.at(0))), normal);
+
+    auto alpha = numer_2 / bary_denom;
+    auto beta = numer_3 / bary_denom;
+    auto gamma = numer_1 / bary_denom;
+
+    if (SHADE_SMOOTH)
+    {
+        auto bary_norm = (alpha * vertices.at(0)->n) + (beta * vertices.at(1)->n) + (gamma * vertices.at(2)->n);
+        normal = bary_norm/bary_norm.length();
+    }
+
+    rec.set_face_normal(cam_ray, normal);
+    rec.d = cam_ray.direction();
+    rec.t = t;
+    rec.p = Q;
+    rec.material = material;
+    rec.uv = alpha * vertices.at(0)->uv + beta * vertices.at(1)->uv + gamma * vertices.at(2)->uv;
+
+    return true;
 }
 
 

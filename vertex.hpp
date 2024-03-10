@@ -37,7 +37,8 @@ class vertex : public point3
             this->o[0] = point.x();
             this->o[1] = point.y();
             this->o[2] = point.z();
-            this->uv = uv;
+            this->uv[0] = uv[0]; 
+            this->uv[1] = 1-uv[1]; 
             this->n = n;
         }
 

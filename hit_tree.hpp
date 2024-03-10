@@ -122,7 +122,7 @@ color hit_tree::node_solve(hit_node* node)
     //diffuse spec component
     for (const auto& light : lights)
         {
-            
+
 
             point3 p = node->rec.p;
             if (light->isArea)
