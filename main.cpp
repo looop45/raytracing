@@ -115,7 +115,7 @@ int main()
 
     lights.push_back(make_shared<point_light>(point3(-1,1,1), color(1,1,0.6), 1.5));
     //lights.push_back(make_shared<distant_light>(lightDir, color(1,1,1), 0.6));
-    lights.push_back(make_shared<area_light>(point3(-0.4, 1, 0), vec3(1,0,0), vec3(0,0,-1), color(1,1,1), 2, 4));
+    lights.push_back(make_shared<area_light>(point3(-0.4, 1, 0), vec3(1,0,0), vec3(0,0,-1), color(1,1,1), 2, 1));
     //objects.add(make_shared<sphere>(point3(spherex,0.25, spherey), 0.2, refl_Sphere));
 
     scene scene1 = scene(cam, bgColor, objects, lights, 8, WIDTH, HEIGHT); 

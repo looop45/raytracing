@@ -18,7 +18,7 @@
 
 using namespace std;
 
-const int SAMPLES = 2;
+const int SAMPLES = 1;
 const int REFL_SAMPLES = 2;
 const int REFR_SAMPLES = 4;
 
